@@ -4,8 +4,8 @@ const assert = require('assert'),
     { bytecode } = require('../compile'),
     interFace = require('../compile').interface
 
-const provider = ganache.provider();
-const web3 = new Web3(provider);
+const provider = ganache.provider()
+const web3 = new Web3(provider)
 
 // connect to the local test network on our laptop
 //const web3 = new Web3(ganache.provider())
