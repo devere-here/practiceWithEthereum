@@ -4,8 +4,11 @@ const assert = require('assert'),
     { bytecode } = require('../compile'),
     interFace = require('../compile').interface
 
+const provider = ganache.provider();
+const web3 = new Web3(provider);
+
 // connect to the local test network on our laptop
-const web3 = new Web3(ganache.provider())
+//const web3 = new Web3(ganache.provider())
 
 let accounts, inbox
 
@@ -14,13 +17,37 @@ beforeEach(async () => {
     accounts = await web3.eth.getAccounts()
 
     // use one of those accounts to deploy the contract
+    // sets Hi, there as the initial message of the contract
     inbox = await new web3.eth.Contract(JSON.parse(interFace)).deploy({ data: bytecode, arguments: ['Hi there!'] })
     .send({ from: accounts[0], gas: '1000000' })
+
+    inbox.setProvider(provider);
 })
 
 describe('Inbox', () => {
     it('deploys a contract', () => {
-        console.log('inbox', inbox)
+        //console.log('inbox', inbox)
+        // address prop will contain address of whereever tis contract was deployed to
+        // assert ok if checkoing if the value we passed in exists
+        assert.ok(inbox.options.address)
+
+    })
+
+    it('has a default massage', async () => {
+        // inbox is an instance of our contract that exists on the blockchain
+        // has a property called methods which contains project's public methods
+        // we are calling the message method in our contract.
+        // the set of parentheses after our message is for any arguments our function might require
+        const message = await inbox.methods.message().call()
+        assert.equal(message, 'Hi there!')
+    })
+
+    it('can change the message', async () => {
+        // send actual sends this function to the network
+        await inbox.methods.setMessage('Did it change?').send({ from: accounts[0] })
+        const message = await inbox.methods.message().call()
+
+        assert.equal(message, 'Did it change?')
     })
 })
 
